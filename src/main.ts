@@ -1,23 +1,25 @@
-import { App, Stack, StackProps } from 'aws-cdk-lib';
-import { Construct } from 'constructs';
+import * as cdk from 'aws-cdk-lib';
+import {
+  aws_ec2 as ec2,
+  aws_eks as eks,
+} from 'aws-cdk-lib';
+import * as construct from 'constructs';
 
-export class MyStack extends Stack {
-  constructor(scope: Construct, id: string, props: StackProps = {}) {
+export class CdkEksPlaygroundStack extends cdk.Stack {
+  constructor(scope: construct.Construct, id: string, props: cdk.StackProps = {}) {
     super(scope, id, props);
 
-    // define resources here...
+    const vpc = new ec2.Vpc(this, 'Vpc', { maxAzs: 3 });
+    new eks.Cluster(this, 'EksCluster', {
+      vpc,
+      version: eks.KubernetesVersion.V1_21,
+      clusterName: 'eks-playground',
+    });
   }
 }
 
-// for development, use account/region from cdk cli
-const devEnv = {
-  account: process.env.CDK_DEFAULT_ACCOUNT,
-  region: process.env.CDK_DEFAULT_REGION,
-};
+const app = new cdk.App();
 
-const app = new App();
-
-new MyStack(app, 'cdk-eks-playground-dev', { env: devEnv });
-// new MyStack(app, 'cdk-eks-playground-prod', { env: prodEnv });
+new CdkEksPlaygroundStack(app, 'cdk-eks-playground');
 
 app.synth();
